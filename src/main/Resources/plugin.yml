@@ -6,4 +6,4 @@ main: com.github.dwesolowski.basicheads.BasicHeads
 
 permissions:
   basicheads.drops:
-    default: true
+    default: false
