@@ -7,4 +7,4 @@ A simple plugin to allow head drops when killed by another player.
 ### Permissions:
 
   **basicheads.drops:**  
-      default: false
+  &nbsp;&nbsp;default: false
