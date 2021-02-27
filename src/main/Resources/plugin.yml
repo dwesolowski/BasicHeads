@@ -1,0 +1,9 @@
+name: BasicHeads
+version: ${version}
+api-version: ${api-version}
+author: dwesolowski
+main: com.github.dwesolowski.basicheads.BasicHeads
+
+permissions:
+  basicheads.drops:
+    default: true
