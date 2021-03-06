@@ -14,6 +14,7 @@ public class BasicHeads extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
+        saveDefaultConfig();
         getServer().getPluginManager().registerEvents(this, this);
     }
 
@@ -24,12 +25,21 @@ public class BasicHeads extends JavaPlugin implements Listener {
 
         if (killer != null) {
             if (killer.hasPermission("basicheads.drops")) {
+                boolean shouldDrop = Math.random() < getConfig().getDouble("dropRate");
+
                 ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
                 SkullMeta meta = (SkullMeta) skull.getItemMeta();
                 meta.setOwningPlayer(e.getEntity());
                 skull.setItemMeta(meta);
 
-                victim.getLocation().getWorld().dropItemNaturally(victim.getLocation(), skull);
+                if (getConfig().getBoolean("useRandom")) {
+                    if (shouldDrop) {
+                        victim.getLocation().getWorld().dropItemNaturally(victim.getLocation(), skull);
+                    }
+
+                } else {
+                    victim.getLocation().getWorld().dropItemNaturally(victim.getLocation(), skull);
+                }
             }
         }
     }
