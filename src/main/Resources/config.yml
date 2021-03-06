@@ -1,0 +1,7 @@
+# BasicHeads config.yml
+
+# Use random dropRates defined below
+useRandom: true
+
+# Rate must be between 0.1 and 1.00 - 'ex. 0.5 = 50% chance'
+dropRate: 0.5
