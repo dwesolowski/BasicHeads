@@ -1,7 +1,15 @@
 # BasicHeads config.yml
 
 # Use random dropRates defined below
-useRandom: true
+useRandom: false
 
 # Rate must be between 0.1 and 1.00 - 'ex. 0.5 = 50% chance'
 dropRate: 0.5
+
+# Messages
+# Comment or leave blank to disable a message
+# displayed can contain standard Minecraft color codes and the Placeholders {VICTIM} and {KILLER} may be used
+Messages:
+  LostYourHead: "&f{KILLER} &chas stolen your head!"
+  ObtainHead: "&eYou have obtained &f{VICTIM}'s &ehead!"
+  ObtainHeadByChance: "&eYou got lucky and obtained &f{VICTIM}'s &ehead!"
