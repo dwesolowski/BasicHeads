@@ -1,65 +1,84 @@
 package com.github.dwesolowski.basicheads;
 
-import net.md_5.bungee.api.ChatColor;
-import org.apache.commons.lang.StringUtils;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 public class BasicHeads extends JavaPlugin implements Listener {
+
+    private String LOST_HEAD, OBTAIN_HEAD, OBTAIN_HEAD_CHANCE;
+    private boolean USE_RANDOM;
+    private double DROP_RATE;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        reloadConfig();
         getServer().getPluginManager().registerEvents(this, this);
     }
 
-    @EventHandler
-    public void onPlayerDeath(PlayerDeathEvent e) {
-        LivingEntity victim = e.getEntity();
-        Player killer = victim.getKiller();
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerDeath(PlayerDeathEvent evt) {
+        // Doesn't need to be final, but ah well.
+        final Player dead = evt.getEntity(), killer = dead.getKiller();
 
-        if (killer != null) {
-            if (killer.hasPermission("basicheads.drops")) {
-                boolean shouldDrop = Math.random() < getConfig().getDouble("dropRate");
+        // Do nothing if killer isn't a player, or they don't have permission.
+        if (killer == null || killer.hasPermission("basicheads.drops")) return;
 
-                ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
-                SkullMeta meta = (SkullMeta) skull.getItemMeta();
-                meta.setOwningPlayer(e.getEntity());
-                skull.setItemMeta(meta);
+        // ThreadLocalRandom is preferred over Random.
+        if (!USE_RANDOM || DROP_RATE > ThreadLocalRandom.current().nextDouble()) {
+            final ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
+            final ItemMeta meta = skull.getItemMeta();
 
-                if (getConfig().getBoolean("useRandom")) {
-                    if (shouldDrop) {
-                        victim.getLocation().getWorld().dropItemNaturally(victim.getLocation(), skull);
-                        if (checkConfigValue("Messages.ObtainHead")) {
-                            killer.sendMessage(colorize("Messages.ObtainHeadByChance").replace("{VICTIM}", victim.getName()));
-                            victim.sendMessage(colorize("Messages.LostYourHead").replace("{KILLER}", killer.getName()));
-                        }
-                    }
+            // Remove IDE errors. Usually, you should always receive a new SkullMeta
+            // instance and this check would be unnecessary. You never know though.
+            if (meta instanceof SkullMeta)
+                ((SkullMeta) meta).setOwningPlayer(dead);
 
-                } else {
-                    victim.getLocation().getWorld().dropItemNaturally(victim.getLocation(), skull);
-                    if (checkConfigValue("Messages.ObtainHead")) {
-                        killer.sendMessage(colorize("Messages.ObtainHead").replace("{VICTIM}", victim.getName()));
-                        victim.sendMessage(colorize("Messages.LostYourHead").replace("{KILLER}", killer.getName()));
-                    }
-                }
-            }
+            skull.setItemMeta(meta);
+
+            // Alternatively, we could also use 'evt.getDrops().add(skull);'
+            dead.getWorld().dropItemNaturally(dead.getLocation(), skull);
+
+            if (LOST_HEAD != null)
+                dead.sendMessage(LOST_HEAD.replace("{KILLER}", ChatColor.stripColor(killer.getDisplayName())));
+
+            final String message = USE_RANDOM ? OBTAIN_HEAD_CHANCE : OBTAIN_HEAD;
+            if (message != null)
+                killer.sendMessage(message.replace("{VICTIM}", ChatColor.stripColor(dead.getDisplayName())));
         }
     }
 
-    public String colorize(String str) {
-        return ChatColor.translateAlternateColorCodes('&', getConfig().getString(str));
+    private String formatMessage(String key) {
+        key = getConfig().getString(key, "").trim();
+        return key.isEmpty() ? null : ChatColor.translateAlternateColorCodes('&', key);
     }
 
-    public boolean checkConfigValue(String name) {
-        return !StringUtils.isBlank(getConfig().getString(name));
+    @Override
+    public void reloadConfig() {
+        super.reloadConfig();
+        LOST_HEAD = formatMessage("Messages.LostYourHead");
+        OBTAIN_HEAD = formatMessage("Messages.ObtainHead");
+        OBTAIN_HEAD_CHANCE = formatMessage("Messages.ObtainHeadChance");
+        DROP_RATE = getConfig().getDouble("dropRate");
+        USE_RANDOM = getConfig().getBoolean("useRandom");
+    }
+
+    public boolean onCommand(CommandSender cs, Command cmd, String alias, String[] args) {
+        cs.sendMessage("§7[§aBasicHeads§7] §eConfig Reloaded!");
+        reloadConfig();
+        return true;
     }
 }
-
