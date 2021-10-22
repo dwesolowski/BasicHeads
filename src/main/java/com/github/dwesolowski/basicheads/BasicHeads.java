@@ -35,7 +35,7 @@ public class BasicHeads extends JavaPlugin implements Listener {
         final Player dead = evt.getEntity(), killer = dead.getKiller();
 
         // Do nothing if killer isn't a player, or they don't have permission.
-        if (killer == null || killer.hasPermission("basicheads.drops")) return;
+        if (killer == null || !killer.hasPermission("basicheads.drops")) return;
 
         // ThreadLocalRandom is preferred over Random.
         if (!USE_RANDOM || DROP_RATE > ThreadLocalRandom.current().nextDouble()) {
