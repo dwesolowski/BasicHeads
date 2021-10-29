@@ -2,8 +2,18 @@ name: BasicHeads
 version: ${version}
 api-version: ${api-version}
 author: dwesolowski
+authors:
+  - "JBouchier (Aka: TheMrJezza)"
 main: com.github.dwesolowski.basicheads.BasicHeads
-
+description: "Players drop their skull when killed in PvP."
 permissions:
   basicheads.drops:
     default: false
+    description: Allows the user to cause their victim's skull to drop.
+  basicheads.reload:
+    default: op
+    description: Allows access to /bhreload
+commands:
+  bhreload:
+    description: Reload the BasicHeads config.yml file.
+    permission: basicheads.reload
